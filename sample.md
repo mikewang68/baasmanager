@@ -9,15 +9,13 @@
   `git clone https://github.com/mikewang68/baasmanager`
 ## 部署k8s
   ###  系统初始化 （***所有节点都需要做***）
-*  修改主机名 
-     修改所有主机hosts，把每台主机IP和主机名对应关系写入host文件
+*  修改主机名(把每台主机IP和主机名对应关系写入host文件)
       `sudo vim /etc/hosts`
      文件内容：
-       > 192.168.101.14 	djtu02
-       > 
-       > 192.168.101.23 	djtu17
-       > 
-       > 192.168.101.52 	djtu07
+
+>        192.168.101.14 	djtu02    
+>        192.168.101.23 	djtu17
+>        192.168.101.52 	djtu07
   
   * 关闭swap分区
      `sudo swapoff -a  &&  sudo  sed  -i  's/^\/swap.img\(.*\)$/#\/swap.img \1/g' /etc/fstab &&  free`
@@ -29,15 +27,15 @@
       ` sudo systemctl disable ufw.service`
 
    * 查看防火墙状态:
- 	 `    sudo ufw status`
+ 	 ` sudo ufw status`
  
     * 将网桥的ip4流量转接到iptables
-```
+   ```
        cat > /etc/sysctl.d/k8s.conf << EOF
        net.bridge.bridge-nf-call-ip6tables = 1
        net.bridge.bridge-nf-call-iptables = 1
        EOF
-```
+   ```
 执行`sysctl --system`生效
     
 ### 安装docker
@@ -232,13 +230,13 @@ curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key
 
 * 登陆dashboard页面
 `https://IP:30001/`
-###   k8s-master 和 baas-kubeengine 部署在同一台ubuntu(192.168.101.14)
+##   k8s-master 和 baas-kubeengine 部署在同一台ubuntu(192.168.101.14)
  *   将k8s master的$HOME/.kube/config文件 替换 kubeconfig/config
   
-> djtu02@djtu02:~/baasmanager/baas-kubeengine/kubeconfig$ pwd
-> /home/djtu02/baasmanager/baas-kubeengine/kubeconfig
-> djtu02@djtu02:~/baasmanager/baas-kubeengine/kubeconfig$cp
-> $HOME/.kube/config ./
+    djtu02@djtu02:~/baasmanager/baas-kubeengine/kubeconfig$ pwd
+    /home/djtu02/baasmanager/baas-kubeengine/kubeconfig
+     djtu02@djtu02:~/baasmanager/baas-kubeengine/kubeconfig$cp
+     $HOME/.kube/config ./
 
 * 修改配置文件 keconfig.yaml,其中BaasKubeMasterConfig是config实际路径地址
 `vim  keconfig.yaml`
@@ -303,7 +301,7 @@ curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key
     ```
     rpcinfo -p
     ```
-  * 我们可以使用 showmount 命令来查看服务端(本机)是否可连接
+  * 使用 showmount 命令来查看服务端(本机)是否可连接
     ```
     showmount
     ```
@@ -313,7 +311,7 @@ curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key
     go run main.go
     ```
 
-### 部署baas-gateway （192.168.101.23） 
+## 部署baas-gateway （192.168.101.23） 
 
 * 安装mysql
   - 进入baas-gateway目录下，通过docker安装mysql
@@ -446,7 +444,7 @@ curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key
 
 
 ### 部署baas-frontend （192.168.101.23）
-* 安装node.js和npm**
+* 安装node.js和npm
 
   `sudo  apt update`
   `sudo  apt  install -y nodejs npm`
@@ -457,6 +455,7 @@ curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key
 *  打包
   `npm run build:prod `
   * 把打包生成的dist文件夹复制并重命名/usr/share/nginx/baas
+    
   `sudo cp -r /home/djtu02/baasmanager/baas-frontend/dist /usr/share/nginx/baas`
   * 配置nginx.conf反向代理(相应修改baas-gateway地址)
  
