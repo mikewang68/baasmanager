@@ -1,4 +1,5 @@
 ### 简单部署样例（简单3台centos虚拟机包含一台nfs，两台k8s集群）
+
 * 以k8s-cluster搭建k8s集群
 * k8s-master 和 baas-kubeengine 部署同一台centos
   * 将k8s master的$HOME/.kube/config文件 替换 kubeconfig/config
@@ -20,7 +21,7 @@
     * service rpcbind start &&  service nfs start (启动rpcbind、nfs服务)
   * 启动 baas-fabricengine 
 * baas-gateway 随便部署到其中一台centos
-  # 部署Gateway
+  ## 部署Gateway
  
 - 进入baas-gateway目录下，通过docker安装mysql
 
@@ -120,8 +121,41 @@ sudo apt install g++
 ![image name](https://github.com/2643920101/baasmanager/blob/main/12.png)
 ![image name](https://github.com/2643920101/baasmanager/blob/main/13.png)
 
-完成
+完成！
 
+## 安装go1.20.6
+
+- 获取安装包
+
+``wget [http://go.dev/dl/go1.20.6.linux-amd64.tar.gz](http://go.dev/dl/go1.20.6.linux-amd64.tar.gz)``
+
+![image](https://github.com/2643920101/baasmanager/blob/main/go1.png)
+
+- 解压文件
+
+``sudo tar -C /usr/local -xzf go1.20.6.linux-amd64.tar.gz``
+
+- 找到对应文件夹
+
+``ls /usr/local/go``
+
+- 设置环境变量
+
+``nano ~/.bash_profile``
+
+- 添加代码如下：export PATH=$PATH:/usr/local/go/bin  
+
+- 运行以下命令应用配置更改：
+
+``source ~/.bash_profile``
+
+- 使用go version验证是否安装成功
+
+![image](https://github.com/2643920101/baasmanager/blob/main/go2.png)
+
+![image](https://github.com/2643920101/baasmanager/blob/main/go3.png)
+
+完成！
 
 * baas-frontend 随便部署到其中一台centos
   * npm run build:prod 打包
