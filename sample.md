@@ -9,27 +9,28 @@
   `git clone https://github.com/mikewang68/baasmanager`
 ### 部署k8s
   * 系统初始化 （***所有节点都需要做***） 
-    * 配置hosts
+     * 配置hosts
 
-    修改所有主机hosts，把每台主机IP和主机名对应关系写入host文件
+  修改所有主机hosts，把每台主机IP和主机名对应关系写入host文件
+  `sudo vim /etc/hosts`
+
+  > 192.168.101.14 	djtu02
+  > 
+  > 192.168.101.23 	djtu17
+  > 
+  > 192.168.101.52 	djtu07
+  
+  * 关闭swap分区
+    `sudo swapoff -a  &&  sudo  sed  -i  's/^\/swap.img\(.*\)$/#\/swap.img \1/g' /etc/fstab &&  free`
+
+    验证是否关闭:```free -m```
+  * 关闭防火墙
     ```
-    sudo vim /etc/hosts
-    
-    > 192.168.101.14 	djtu02
-    > 192.168.101.23 	djtu17
-    > 192.168.101.52 	djtu07
+    sudo systemctl stop ufw.service
+    sudo systemctl disable ufw.service
+    #查看防火墙状态:
+    sudo ufw status
     ```
-    * 关闭swap分区
-      ```
-      sudo swapoff -a  &&  sudo  sed  -i  's/^\/swap.img\(.*\)$/#\/swap.img \1/g' /etc/fstab &&  free
-      ```
-      验证是否关闭:```free -m```
-    * 关闭防火墙
-      ```
-      sudo systemctl stop ufw.service
-      sudo systemctl disable ufw.service
-      ```
-      查看防火墙状态:`sudo ufw status`
     * 将网桥的ip4流量转接到iptables
       ```
       cat > /etc/sysctl.d/k8s.conf << EOF
