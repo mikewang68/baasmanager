@@ -1,5 +1,5 @@
 # 部署样例（3台ubuntu机器 其中包含一台nfs，两台k8s集群）
-### 地址规划
+## 地址规划
 | 主机名 |IP地址  |节点 |
 |--|--|--|
 | djtu02 | 192.168.101.14 |主节点
@@ -7,40 +7,38 @@
 |djtu17|192.168.101.23|从节点
 * 克隆程序
   `git clone https://github.com/mikewang68/baasmanager`
-### 部署k8s
-  * 系统初始化 （***所有节点都需要做***） 
-     * 配置hosts
-
-  修改所有主机hosts，把每台主机IP和主机名对应关系写入host文件
-  `sudo vim /etc/hosts`
-
-  > 192.168.101.14 	djtu02
-  > 
-  > 192.168.101.23 	djtu17
-  > 
-  > 192.168.101.52 	djtu07
+## 部署k8s
+  ###  系统初始化 （***所有节点都需要做***）
+*  修改主机名 
+     修改所有主机hosts，把每台主机IP和主机名对应关系写入host文件
+      `sudo vim /etc/hosts`
+     文件内容：
+       > 192.168.101.14 	djtu02
+       > 
+       > 192.168.101.23 	djtu17
+       > 
+       > 192.168.101.52 	djtu07
   
   * 关闭swap分区
-    `sudo swapoff -a  &&  sudo  sed  -i  's/^\/swap.img\(.*\)$/#\/swap.img \1/g' /etc/fstab &&  free`
+     `sudo swapoff -a  &&  sudo  sed  -i  's/^\/swap.img\(.*\)$/#\/swap.img \1/g' /etc/fstab &&  free`
 
-    验证是否关闭:```free -m```
+      验证是否关闭:```free -m```
   * 关闭防火墙
-    ```
-    sudo systemctl stop ufw.service
-    sudo systemctl disable ufw.service
-    ```
-    #查看防火墙状态:
-    ```
-    sudo ufw status
-    ```
-  * 将网桥的ip4流量转接到iptables
-    ```
-    cat > /etc/sysctl.d/k8s.conf << EOF
-    net.bridge.bridge-nf-call-ip6tables = 1
-    net.bridge.bridge-nf-call-iptables = 1
-    EOF
-    ```
-    执行`sysctl --system`生效
+  
+       `sudo systemctl stop ufw.service`
+      ` sudo systemctl disable ufw.service`
+
+   * 查看防火墙状态:
+ 	 `    sudo ufw status`
+ 
+    * 将网桥的ip4流量转接到iptables
+```
+       cat > /etc/sysctl.d/k8s.conf << EOF
+       net.bridge.bridge-nf-call-ip6tables = 1
+       net.bridge.bridge-nf-call-iptables = 1
+       EOF
+```
+执行`sysctl --system`生效
     
 ### 安装docker
  * 更新apt软件包缓存
@@ -234,8 +232,20 @@ curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key
 
 * 登陆dashboard页面
 `https://IP:30001/`
+###   k8s-master 和 baas-kubeengine 部署在同一台ubuntu(192.168.101.14)
+ *   将k8s master的$HOME/.kube/config文件 替换 kubeconfig/config
+  
+> djtu02@djtu02:~/baasmanager/baas-kubeengine/kubeconfig$ pwd
+> /home/djtu02/baasmanager/baas-kubeengine/kubeconfig
+> djtu02@djtu02:~/baasmanager/baas-kubeengine/kubeconfig$cp
+> $HOME/.kube/config ./
 
-### nfs服务器和 baas-fabricengine 部署同一台centos
+* 修改配置文件 keconfig.yaml,其中BaasKubeMasterConfig是config实际路径地址
+`vim  keconfig.yaml`
+  
+
+      BaasKubeMasterConfig: /home/djtu02/baasmanager/baas-kubeengine/kubeconfig/config
+### nfs服务器和 baas-fabricengine 部署同一台ubuntu(192.168.101.23)
   * 查看docker和docker-compose和go是否安装，如未安装，按照上述步骤从新安装
   * Fabric的安装，创建目录并进入
     ```
@@ -303,7 +313,8 @@ curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key
     go run main.go
     ```
 
-### 随便部署到其中一台centos,我这里还是部署到了安装nfs的那台机器上 
+### 部署baas-gateway （192.168.101.23） 
+
 * 安装mysql
   - 进入baas-gateway目录下，通过docker安装mysql
 
@@ -433,12 +444,22 @@ curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key
 
 ![image name](https://github.com/mikewang68/baasmanager/blob/master/baas-gateway/go3.png)
 
-完成！
 
-* baas-frontend 随便部署到其中一台centos
-  * npm run build:prod 打包
-  * 用nginx部署，把打包生成的dist文件夹复制并重命名/usr/share/nginx/baas
+### 部署baas-frontend （192.168.101.23）
+* 安装node.js和npm**
+
+  `sudo  apt update`
+  `sudo  apt  install -y nodejs npm`
+ *  安装项目依赖
+  `npm install `
+  * 安装nginx
+ `sudo apt install nginx`
+*  打包
+  `npm run build:prod `
+  * 把打包生成的dist文件夹复制并重命名/usr/share/nginx/baas
+  `sudo cp -r /home/djtu02/baasmanager/baas-frontend/dist /usr/share/nginx/baas`
   * 配置nginx.conf反向代理(相应修改baas-gateway地址)
+ 
     ```
     user www-data;
     worker_processes auto;
