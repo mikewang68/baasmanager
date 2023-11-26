@@ -28,8 +28,8 @@
 
    * 查看防火墙状态:
  	 ` sudo ufw status`
- 
-    * 将网桥的ip4流量转接到iptables
+
+   * 将网桥的ip4流量转接到iptables
    ```
        cat > /etc/sysctl.d/k8s.conf << EOF
        net.bridge.bridge-nf-call-ip6tables = 1
