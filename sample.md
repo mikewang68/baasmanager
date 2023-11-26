@@ -3,23 +3,53 @@
 * 以k8s-cluster搭建k8s集群
 * k8s-master 和 baas-kubeengine 部署同一台centos
   * 将k8s master的$HOME/.kube/config文件 替换 kubeconfig/config
-  * 修改配置文件 keconfig.yaml  
-* nfs服务器和 baas-fabricengine 部署同一台centos
-  * 设置 GOPATH 环境变量
-  * 创建baas根目录
-    * 复制 baas-template到其下
-    * 创建nfs共享目录 baas-nfsshared 
-  * 修改配置文件 feconfig.yaml  
-  * nfs安装和配置
-    * yum -y install nfs-utils rpcbind
-    * id (查看当前用户的uid和gid)
-    * vim /etc/exports (添加配置,相应修改)  
-      ```
-      /baas根目录/baas-nfsshared 192.168.1.0/24(rw,sync,insecure,anonuid=当前用户的uid,anongid=当前用户的gid)
-      ```
-    * exportfs -r (配置生效)
-    * service rpcbind start &&  service nfs start (启动rpcbind、nfs服务)
-  * 启动 baas-fabricengine 
+  * 修改配置文件 keconfig.yaml
+
+ ### nfs服务器和 baas-fabricengine 部署同一台centos
+ * Fabric的安装
+  * 查看docker和docker-compose和go是否安装，如未安装，按照上述步骤从新安装
+  * 创建目录并进入
+    mkdir -p $GOPATH/src/github.com/hyperledger
+    cd $GOPATH/src/github.com/hyperledger
+  * 下载fabric源码
+    git clone https://github.com/hyperledger/fabric.git
+  * 脚本下载
+    sudo ./bootstrap.sh
+  * 测试网络
+    cd ./fabric-samples/first-network/
+    ./byfn.sh up
+  * 关闭网络
+    ./byfn.sh down
+
+  * 在baasmanager路径下，创建baas根目录
+    mkdir baas
+  * 复制baas-template到其下
+    cp -r baas-template baas
+  * 在baas路径下创建nef共享目录baas-nfsshared,并使其生效
+    cd bass
+    mkdir baas-nfsshared
+    chmod 755 -R baas-nfsshared/
+
+* 安装nfs
+  * 在baasmanager路径下
+  * 下载安装nfs
+    yum -y install nfs-utils rpcbind
+  * 修改配置文件
+    vim /etc/exports
+    /home/djtu17/baasmanager/baas/baas-nfsshared 192.168.101.0/24(rw,sync,insecure,anonuid=0,anongid=0,subtree_check)
+  * 使用exportfs -r命令使NFS配置生效
+    exportfs -r
+    ```
+    service rpcbind start && service nfs start (启动rpcbind、nfs服务)
+    ```
+  * nfs服务启动后，使用rpcinfo -p查看端口号是否生效
+    rpcinfo -p
+  * 我们可以使用 showmount 命令来查看服务端(本机)是否可连接
+    showmount
+  * 启动 baas-fabricengine
+    go build ./main.go
+    go run main.go
+    
 * baas-gateway 随便部署到其中一台centos
   ## 部署Gateway
  
