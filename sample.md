@@ -80,28 +80,28 @@
     ```
     docker version
     ```
-##  3.安装k8s
+### 安装k8s
 
-### 3.1 安装基础环境
+ *  安装基础环境
 
 `apt-get install -y ca-certificates curl software-properties-common apt-transport-https curl`
 `curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key add -`
 
-### 3.2 执行配置k8s阿里云源
+ *  执行配置k8s阿里云源
 
 `vim /etc/apt/sources.list.d/kubernetes.list`
 加入以下内容
 
       deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
 
-### 3.3 执行更新
+ *  执行更新
 `apt-get update -y`
 
-### 3.4  安装kubeadm、kubectl、kubelet
+ *  安装kubeadm、kubectl、kubelet
 `apt-get install -y kubelet=1.23.1-00 kubeadm=1.23.1-00 kubectl=1.23.1-00`
-设置kubelet开机自启，查看kubeadm版本信息
+ * 设置kubelet开机自启，查看kubeadm版本信息
 `systemctl enable kubelet ; kubeadm version`
-标记软件包，防止自动更新
+ * 标记软件包，防止自动更新
 `sudo apt-mark hold kubelet kubeadm kubectl`
     
 ### nfs服务器和 baas-fabricengine 部署同一台centos
