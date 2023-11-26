@@ -103,7 +103,138 @@
 `systemctl enable kubelet ; kubeadm version`
  * 标记软件包，防止自动更新
 `sudo apt-mark hold kubelet kubeadm kubectl`
-    
+
+###  部署 master （master上执行）
+ * 创建文件夹
+
+`mkdir /etc/sysconfig`
+
+ * 编辑kubelet配置文件
+
+`vi /etc/sysconfig/kubelet`
+加入以下内容：
+
+    KUBELET_KUBEADM_ARGS="--container-runtime=remote --container-runtime-endpoint=/run/cri-dockerd.sock"
+* 创建kubeadm-config.yaml 配置文件` vim kubeadm-config.yaml `，文件内容如下
+
+```
+apiVersion: kubeadm.k8s.io/v1beta3
+bootstrapTokens:
+- groups:
+- system:bootstrappers:kubeadm:default-node-token
+token: abcdef.0123456789abcdef
+ttl: 24h0m0s
+usages:
+- signing
+- authentication
+kind: InitConfiguration
+localAPIEndpoint:
+advertiseAddress:  192.168.101.14
+bindPort: 6443
+nodeRegistration:
+criSocket: /var/run/dockershim.sock
+imagePullPolicy: IfNotPresent
+name: master
+taints: null
+---
+apiServer:
+timeoutForControlPlane: 4m0s
+apiVersion: kubeadm.k8s.io/v1beta3
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controllerManager: {}
+dns: {}
+etcd:
+local:
+dataDir: /var/lib/etcd
+imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
+kind: ClusterConfiguration
+kubernetesVersion: 1.23.1
+networking:
+dnsDomain: cluster.local
+serviceSubnet: 10.96.0.0/12
+scheduler: {}
+---
+kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+#cgroupDriver: systemd
+cgroupDriver: cgroupfs 
+```
+注：修改文件中的advertiseAddress 参数为当前机器的局域网地址。
+ *  执行初始化操作
+`kubeadm init --config kubeadm-config.yaml`
+执行成功后 会出现以下两个内容
+
+>  mkdir -p $HOME/.kube   sudo cp -i /etc/kubernetes/admin.conf
+> $HOME/.kube/config   sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+> kubeadm join 192.168.101.14:6443 --token abcdef.0123456789abcdef \
+> --discovery-token-ca-cert-hash sha256:8f2a287391649f7ec1b9af29907b66586adc693d8e8963312c49debf998eaeb6
+ * 安装网络插件flannel
+
+     * 下载kube-flannel.yml文件
+`wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml`
+
+      * 使用kubectl命令执行下载的文件
+
+         `  kubectl apply -f kube-flannel.yml`
+### 部署工作节点
+
+  * 安装基础环境
+
+`apt-get install -y ca-certificates curl software-properties-common apt-transport-https curl
+curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key add -`
+ * 执行配置k8s阿里云源
+`vim /etc/apt/sources.list.d/kubernetes.list`
+加入以下内容
+`deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main`
+ * 执行更新
+
+`apt-get update -y`
+
+ *  安装kubeadm、kubectl、kubelet
+
+`apt-get install -y kubelet=1.23.1-00 kubeadm=1.23.1-00 kubectl=1.23.1-00`
+
+ *  阻止自动更新
+
+`apt-mark hold kubelet kubeadm kubectl`
+
+ * 加入集群
+
+这里加入集群的命令就是在主节点生成的，可以登录master节点，使用`kubeadm token create --print-join-command `来获取。获取后执行如下。
+
+    kubeadm join 192.168.101.14:6443 --token abcdef.0123456789abcdef \--discovery-token-ca-cert-hash sha256:8f2a287391649f7ec1b9af29907b66586adc693d8e8963312c49debf998eaeb6
+
+加入成功后，可以在master节点上使用`kubectl get nodes`命令查看到加入的节点   
+###  安装dashboard
+*  下载安装包：`wget https://raw.githubusercontent.com/kubernetes/dashboard/v2.4.0/aio/deploy/recommended.yaml`
+
+*  修改` recommended.yaml`文件  
+`vi recommended.yaml`
+在**kind：Service**部分添加`type：NodePort`和`nodePort： 30001`
+* 更新配置：
+`kubectl apply -f recommended.yaml`
+* 查看服务：
+`kubectl get svc -n kubernetes-dashboard`
+* 生成登陆须要的token：
+   *  建立service account
+`kubectl create sa dashboard-admin -n kube-system`
+  *  建立角色绑定关系
+`kubectl create clusterrolebinding dashboard-admin --clusterrole=cluster-admin --serviceaccount=kube-system:dashboard-admin`
+
+
+  * 查看dashboard-admin的secret名字
+   `ADMIN_SECRET=$(kubectl get secrets -n kube-system | grep dashboard-admin | awk '{print $1}')`
+`echo ADMIN_SECRET`
+
+  * 打印secret的token
+`kubectl describe secret -n kube-system ${ADMIN_SECRET} | grep -E '^token' | awk '{print $2}'`
+
+* 登陆dashboard页面
+`https://IP:30001/`
+
 ### nfs服务器和 baas-fabricengine 部署同一台centos
   * 查看docker和docker-compose和go是否安装，如未安装，按照上述步骤从新安装
   * Fabric的安装，创建目录并进入
