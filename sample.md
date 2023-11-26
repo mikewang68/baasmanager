@@ -29,13 +29,13 @@
    * 查看防火墙状态:
  	 ` sudo ufw status`
 
-   * 将网桥的ip4流量转接到iptables
+ * 将网桥的ip4流量转接到iptables
    ```
        cat > /etc/sysctl.d/k8s.conf << EOF
        net.bridge.bridge-nf-call-ip6tables = 1
        net.bridge.bridge-nf-call-iptables = 1
        EOF
-   ```
+  ```
 执行`sysctl --system`生效
     
 ### 安装docker
