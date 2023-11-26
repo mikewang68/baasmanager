@@ -1,11 +1,75 @@
 ### 简单部署样例（简单3台centos虚拟机包含一台nfs，两台k8s集群）
+# 一、部署K8S之前的准备
+## 1.地址规划
+| 主机名 |IP地址  |节点 |
+|--|--|--|
+| djtu02 | 192.168.101.14 |主节点
+|djtu07|192.168.101.52|从节点
+|djtu17|192.168.101.23|从节点
+## 2.克隆程序
+`git clone https://github.com/mikewang68/baasmanager`
+# 二、部署k8s
+## 1.系统初始化 （***所有节点都需要做***） 
+### 1.1 配置hosts
 
-* 以k8s-cluster搭建k8s集群
-* k8s-master 和 baas-kubeengine 部署同一台centos
-  * 将k8s master的$HOME/.kube/config文件 替换 kubeconfig/config
-  * 修改配置文件 keconfig.yaml
+修改所有主机hosts，把每台主机IP和主机名对应关系写入host文件
+`sudo vim /etc/hosts`
 
- ### nfs服务器和 baas-fabricengine 部署同一台centos
+> 192.168.101.14 	djtu02
+> 192.168.101.23 	djtu17
+> 192.168.101.52 	djtu07
+### 1.2 关闭swap分区
+`sudo swapoff -a  &&  sudo  sed  -i  's/^\/swap.img\(.*\)$/#\/swap.img \1/g' /etc/fstab &&  free`
+验证是否关闭:```free -m```
+### 1.3关闭防火墙
+`sudo systemctl stop ufw.service`
+`sudo systemctl disable ufw.service`
+查看防火墙状态:`sudo ufw status`
+### 1.4 将网桥的ip4流量转接到iptables
+`cat > /etc/sysctl.d/k8s.conf << EOF`
+`net.bridge.bridge-nf-call-ip6tables = 1`
+`net.bridge.bridge-nf-call-iptables = 1`
+`EOF`
+执行`sysctl --system`生效
+## 2.安装docker
+### 2.1更新apt软件包缓存
+
+` sudo apt-get update`
+`sudo apt-get install docker-ce docker-ce-cli containerd.io`
+`apt update
+apt-get install ca-certificates curl gnupg lsb-release `
+### 2.2安装证书
+
+`curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -`
+
+### 2.3 写入软件源信息
+
+`sudo add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable"`
+
+### 2.4查看可安装的版本
+
+`apt-cache madison docker-ce`
+
+### 2.5安装
+
+`sudo apt-get install docker-ce=5:20.10.22~3-0~ubuntu-focal docker-ce-cli=5:20.10.22~3-0~ubuntu-focal containerd.io`
+
+
+
+### 2.6启动docker
+`systemctl start docker`
+
+### 2.7重启，设置开机自启
+
+`sudo systemctl daemon-reload`
+`sudo systemctl restart docker`
+`sudo systemctl enable docker`
+
+### 2.8查看版本信息
+
+`docker version`
+
+### nfs服务器和 baas-fabricengine 部署同一台centos
   * 查看docker和docker-compose和go是否安装，如未安装，按照上述步骤从新安装
   * Fabric的安装，创建目录并进入
     ```
@@ -73,8 +137,8 @@
     go build ./main.go
     go run main.go
     ```
-    
-  ## 随便部署到其中一台centos,我这里还是部署到了安装nfs的那台机器上 
+
+### 随便部署到其中一台centos,我这里还是部署到了安装nfs的那台机器上 
 - 进入baas-gateway目录下，通过docker安装mysql
 
 ``sudo docker pull mysql:5.7``
