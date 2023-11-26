@@ -149,7 +149,8 @@
     ```
 
 ### 随便部署到其中一台centos,我这里还是部署到了安装nfs的那台机器上 
-- 进入baas-gateway目录下，通过docker安装mysql
+* 安装mysql
+  - 进入baas-gateway目录下，通过docker安装mysql
 
   ``sudo docker pull mysql:5.7``
 ![image name](https://github.com/mikewang68/baasmanager/blob/master/baas-gateway/1.png)
@@ -158,7 +159,7 @@
 - 通过docker启动MySQL容器
 
 
-**记住添加后返回的容器ID**
+  **记住添加后返回的容器ID**
 ```
   sudo docker run -p 3306:3306 --name apimysql \
   > -e MYSQL_ROOT_PASSWORD=123456 \
