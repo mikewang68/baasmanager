@@ -6,9 +6,8 @@
   * 修改配置文件 keconfig.yaml
 
  ### nfs服务器和 baas-fabricengine 部署同一台centos
- * Fabric的安装
   * 查看docker和docker-compose和go是否安装，如未安装，按照上述步骤从新安装
-  * 创建目录并进入
+  * Fabric的安装，创建目录并进入
     ```
     mkdir -p $GOPATH/src/github.com/hyperledger
     cd $GOPATH/src/github.com/hyperledger
@@ -47,12 +46,11 @@
     ```
 
 * 安装nfs
-  * 在baasmanager路径下
-  * 下载安装nfs
+  * 在baasmanager路径下,下载安装nfs
     ```
     yum -y install nfs-utils rpcbind
     ```
-  * 修改配置文件
+  * 在baas路径下，修改配置文件
     ```
     vim /etc/exports
     /home/djtu17/baasmanager/baas/baas-nfsshared 192.168.101.0/24(rw,sync,insecure,anonuid=0,anongid=0,subtree_check)
@@ -60,8 +58,6 @@
   * 使用exportfs -r命令使NFS配置生效
     ```
     exportfs -r
-    ```
-    ```
     service rpcbind start && service nfs start (启动rpcbind、nfs服务)
     ```
   * nfs服务启动后，使用rpcinfo -p查看端口号是否生效
