@@ -74,9 +74,7 @@
     go run main.go
     ```
     
-* baas-gateway 随便部署到其中一台centos
-  ## 部署Gateway
- 
+  ## 随便部署到其中一台centos,我这里还是部署到了安装nfs的那台机器上 
 - 进入baas-gateway目录下，通过docker安装mysql
 
 ``sudo docker pull mysql:5.7``
