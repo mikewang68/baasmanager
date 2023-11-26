@@ -26,7 +26,7 @@
 - 进入baas-gateway目录下，通过docker安装mysql
 
 ``sudo docker pull mysql:5.7``
-![image name](https://github.com/mikewang68/baasmanager/blob/master/baas-gateway/1.png)
+![image name](https://github.com/mikewang68/baasmanager/blob/master/baas-gateway/5f3fca522c754ce13f70fdfea6919d6.jpg)
 
 
 - 通过docker启动MySQL容器
