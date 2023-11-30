@@ -285,7 +285,7 @@ curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key
 * 安装nfs
   * 在baasmanager路径下,下载安装nfs
     ```
-    yum -y install nfs-utils rpcbind
+    sudo apt install nfs-kernel-server
     ```
   * 在baas路径下，修改配置文件
     ```
